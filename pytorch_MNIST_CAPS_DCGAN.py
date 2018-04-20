@@ -210,6 +210,7 @@ for epoch in range(train_epoch):
         D_result = D(x_)
         #D_real_loss = BCE_loss(D_result, y_real_)
         #D_real_loss= D.margin_loss(D_result,y_real_)
+
         D_real_loss= D.loss(data=x_,x=D_result[0],target=y_real_,reconstructions=D_result[1])        
 
         z_ = torch.randn((mini_batch, 100)).view(-1, 100, 1, 1)
@@ -225,9 +226,9 @@ for epoch in range(train_epoch):
         D_result=D(G_result)
         #D_fake_loss = BCE_loss(D_result, y_fake_)
         #D_fake_loss = D.margin_loss(D_result,y_fake_)
-        D_fake_loss= D.loss(data=G_result,x=D_result[0],target=y_fake_,reconstructions=D_result[1])
+        D_fake_loss= D.loss(data=Variable(G_result.data,volatile=True),x=D_result[0],target=y_fake_,reconstructions=D_result[1])
 
-        D_fake_score = D_result.data.mean()
+        D_fake_score = D_result[0].data.mean()
 
         D_train_loss = D_real_loss + D_fake_loss
 
@@ -252,7 +253,7 @@ for epoch in range(train_epoch):
         D_result = D(G_result)
         #G_train_loss = BCE_loss(D_result, y_real_)
         #G_train_loss=D.margin_loss(D_result,y_real_)
-        G_train_loss= D.loss(data=G_result,x=D_result[0],target=y_real_,reconstructions=D_result[1])
+        G_train_loss= D.loss(data=Variable(G_result.data,volatile=True),x=D_result[0],target=y_real_,reconstructions=D_result[1])
         G_train_loss.backward()
         G_optimizer.step()
 
