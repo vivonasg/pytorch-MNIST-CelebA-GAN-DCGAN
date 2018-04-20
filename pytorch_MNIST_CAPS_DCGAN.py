@@ -162,8 +162,8 @@ G.weight_init(mean=0.0, std=0.02)
 
 
 if USE_CUDA:
-    G.cuda()
-    D.cuda()
+    G=G.cuda()
+    D=D.cuda()
 
 # Binary Cross Entropy loss
 BCE_loss = nn.BCELoss()
@@ -198,14 +198,14 @@ for epoch in range(train_epoch):
         D.zero_grad()
 
         mini_batch = x_.size()[0]
-
+       
         y_real_ = torch.ones(mini_batch)
         y_fake_ = torch.zeros(mini_batch)
-
         if USE_CUDA:
-            x_, y_real_, y_fake_ = Variable(x_.cuda()), Variable(y_real_.cuda()), Variable(y_fake_.cuda())
+            x_, y_real_, y_fake_ = Variable(x_).cuda(), Variable(y_real_.cuda()), Variable(y_fake_.cuda())
         else:
             x_, y_real_, y_fake_ = Variable(x_), Variable(y_real_), Variable(y_fake_)
+
         D_result = D(x_).squeeze()
         D_real_loss = BCE_loss(D_result, y_real_)
 
@@ -236,7 +236,7 @@ for epoch in range(train_epoch):
         G.zero_grad()
 
         z_ = torch.randn((mini_batch, 100)).view(-1, 100, 1, 1)
-
+        D.eval()
         if USE_CUDA:
             z_ = Variable(z_.cuda())
         else:
