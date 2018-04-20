@@ -206,7 +206,8 @@ for epoch in range(train_epoch):
         else:
             x_, y_real_, y_fake_ = Variable(x_), Variable(y_real_), Variable(y_fake_)
 
-        D_result = D(x_).squeeze()
+        #D_result = D(x_).squeeze()
+        D_result = D(x_)
         #D_real_loss = BCE_loss(D_result, y_real_)
         D_real_loss= D.margin_loss(D_result,y_real_)
 
@@ -219,8 +220,8 @@ for epoch in range(train_epoch):
 
         G_result = G(z_)
 
-        D_result = D(G_result).squeeze()
-
+        #D_result = D(G_result).squeeze()
+        D_result=D(G_result)
         #D_fake_loss = BCE_loss(D_result, y_fake_)
         D_fake_loss = D.margin_loss(D_result,y_fake_)
 
@@ -246,8 +247,8 @@ for epoch in range(train_epoch):
             z_ = Variable(z_)
 
         G_result = G(z_)
-        D_result = D(G_result).squeeze()
-
+        #D_result = D(G_result).squeeze()
+        D_result = D(G_result)
         #G_train_loss = BCE_loss(D_result, y_real_)
         G_train_loss=D.margin_loss(D_result,y_real_)
         G_train_loss.backward()
