@@ -151,7 +151,7 @@ train_loader = torch.utils.data.DataLoader(
 
 # network
 if opt.caps_D:
-    D=CapsNet() #already initlialized
+    D=CapsNet(True) #already initlialized
 else:
     D = discriminator(d=128)
     D.weight_init(mean=0.0, std=0.02)
@@ -209,7 +209,8 @@ for epoch in range(train_epoch):
         #D_result = D(x_).squeeze()
         D_result = D(x_)
         #D_real_loss = BCE_loss(D_result, y_real_)
-        D_real_loss= D.margin_loss(D_result,y_real_)
+        #D_real_loss= D.margin_loss(D_result,y_real_)
+        D_real_loss= D.loss(data=x_,x=D_result[0],target=y_real_,reconstructions=D_result[1])        
 
         z_ = torch.randn((mini_batch, 100)).view(-1, 100, 1, 1)
 
@@ -223,8 +224,8 @@ for epoch in range(train_epoch):
         #D_result = D(G_result).squeeze()
         D_result=D(G_result)
         #D_fake_loss = BCE_loss(D_result, y_fake_)
-        D_fake_loss = D.margin_loss(D_result,y_fake_)
-
+        #D_fake_loss = D.margin_loss(D_result,y_fake_)
+        D_fake_loss= D.loss(data=G_result,x=D_result[0],target=y_fake_,reconstructions=D_result[1])
 
         D_fake_score = D_result.data.mean()
 
@@ -250,27 +251,32 @@ for epoch in range(train_epoch):
         #D_result = D(G_result).squeeze()
         D_result = D(G_result)
         #G_train_loss = BCE_loss(D_result, y_real_)
-        G_train_loss=D.margin_loss(D_result,y_real_)
+        #G_train_loss=D.margin_loss(D_result,y_real_)
+        G_train_loss= D.loss(data=G_result,x=D_result[0],target=y_real_,reconstructions=D_result[1])
         G_train_loss.backward()
         G_optimizer.step()
 
         G_losses.append(G_train_loss.data[0])
         num_iter += 1
+
+        if num_iter%100==0 and opt.caps_D:
+            p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(size)+'_caps_'+'.png'
+            fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(size) +'_caps_'+ '.png'
+
+            save_result(fixed_p,isFix=True)
+            save_result(p,isFix=False)
         if num_iter%1==0:
+
             print('epoch: [%d/%d] batch: [%d] loss_d: %.3f loss_g: %.3f' %  (epoch+1,train_epoch,num_iter,D_train_loss.data[0],G_train_loss.data[0]))
     epoch_end_time = time.time()
     per_epoch_ptime = epoch_end_time - epoch_start_time
-
-
+    
     print('[%d/%d] - ptime: %.2f, loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, torch.mean(torch.FloatTensor(D_losses)),
-                                                              torch.mean(torch.FloatTensor(G_losses))))
-    p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(epoch + 1) + '_size_'+str(size)+'.png'
-    fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(epoch + 1) + '_size_'+str(size) + '.png'
-    save_result(fixed_p,isFix=True)
-    save_result(p,isFix=False)
+                                                              torch.mean(torch.FloatTensor(G_losses))))   
     train_hist['D_losses'].append(torch.mean(torch.FloatTensor(D_losses)))
     train_hist['G_losses'].append(torch.mean(torch.FloatTensor(G_losses)))
     train_hist['per_epoch_ptimes'].append(per_epoch_ptime)
+
 
 end_time = time.time()
 total_ptime = end_time - start_time

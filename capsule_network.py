@@ -99,9 +99,9 @@ class Decoder(nn.Module):
         self.reconstraction_layers = nn.Sequential(
             nn.Linear(16 * 10, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(512, 1024),
+            nn.Linear(512, 1636),
             nn.ReLU(inplace=True),
-            nn.Linear(1024, 784),
+            nn.Linear(1636, 1024),
             nn.Sigmoid()
         )
         
@@ -116,7 +116,7 @@ class Decoder(nn.Module):
         masked = masked.index_select(dim=0, index=Variable(max_length_indices.squeeze(1).data))
         
         reconstructions = self.reconstraction_layers((x * masked[:, :, None, None]).view(x.size(0), -1))
-        reconstructions = reconstructions.view(-1, 1, 28, 28)
+        reconstructions = reconstructions.view(-1, 1, 32, 32)
         
         return reconstructions, masked
 
@@ -160,7 +160,7 @@ class CapsNet(nn.Module):
 
 
     def margin_loss(self, x, labels, size_average=True):
-        batch_size = x.size(0)
+        batch_size = len(x)
 
         v_c = torch.sqrt((x**2).sum(dim=2, keepdim=True))
 
