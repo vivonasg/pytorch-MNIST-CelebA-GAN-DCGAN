@@ -7,8 +7,7 @@ from torch.autograd import Variable
 from torch.optim import Adam
 from torchvision import datasets, transforms
 import pdb
-USE_CUDA = False
-
+USE_CUDA=torch.cuda.is_available()
 class ConvLayer(nn.Module):
     def __init__(self, in_channels=1, out_channels=256, kernel_size=9):
         super(ConvLayer, self).__init__()
@@ -72,7 +71,6 @@ class DigitCaps(nn.Module):
         b_ij = Variable(torch.zeros(1, self.num_routes, self.num_capsules, 1))
         if USE_CUDA:
             b_ij = b_ij.cuda()
-
         num_iterations = 3
         for iteration in range(num_iterations):
             c_ij = F.softmax(b_ij)
