@@ -1,30 +1,36 @@
 import os, time
-import matplotlib.pyplot as plt
 import itertools
 import pickle
-import imageio
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
+import torchvision.utils as vutils
 
-# G(z)
+# G(z)i
+
+size=32
+
 class generator(nn.Module):
     # initializers
-    def __init__(self, d=128):
+    def __init__(self, d=128,img_size=size):
         super(generator, self).__init__()
+        self.img_size=size
         self.deconv1 = nn.ConvTranspose2d(100, d*8, 4, 1, 0)
         self.deconv1_bn = nn.BatchNorm2d(d*8)
         self.deconv2 = nn.ConvTranspose2d(d*8, d*4, 4, 2, 1)
         self.deconv2_bn = nn.BatchNorm2d(d*4)
         self.deconv3 = nn.ConvTranspose2d(d*4, d*2, 4, 2, 1)
         self.deconv3_bn = nn.BatchNorm2d(d*2)
-        self.deconv4 = nn.ConvTranspose2d(d*2, d, 4, 2, 1)
-        self.deconv4_bn = nn.BatchNorm2d(d)
-        self.deconv5 = nn.ConvTranspose2d(d, 1, 4, 2, 1)
-
+        
+        if self.img_size==64:
+            self.deconv4 = nn.ConvTranspose2d(d*2, d, 4, 2, 1)
+            self.deconv4_bn = nn.BatchNorm2d(d)
+            self.deconv5 = nn.ConvTranspose2d(d, 1, 4, 2, 1)
+        if self.img_size==32: 
+            self.deconv4= nn.ConvTranspose2d(d*2,1,4,2,1)
     # weight_init
     def weight_init(self, mean, std):
         for m in self._modules:
@@ -36,23 +42,31 @@ class generator(nn.Module):
         x = F.relu(self.deconv1_bn(self.deconv1(input)))
         x = F.relu(self.deconv2_bn(self.deconv2(x)))
         x = F.relu(self.deconv3_bn(self.deconv3(x)))
-        x = F.relu(self.deconv4_bn(self.deconv4(x)))
-        x = F.tanh(self.deconv5(x))
-
+        if self.img_size==64:
+            x = F.relu(self.deconv4_bn(self.deconv4(x)))
+            x = F.tanh(self.deconv5(x))
+        if self.img_size==32:
+            x= F.tanh(self.deconv4(x))
         return x
 
 class discriminator(nn.Module):
     # initializers
-    def __init__(self, d=128):
+    def __init__(self, d=128,img_size=size):
         super(discriminator, self).__init__()
+        self.img_size=img_size
         self.conv1 = nn.Conv2d(1, d, 4, 2, 1)
         self.conv2 = nn.Conv2d(d, d*2, 4, 2, 1)
         self.conv2_bn = nn.BatchNorm2d(d*2)
         self.conv3 = nn.Conv2d(d*2, d*4, 4, 2, 1)
         self.conv3_bn = nn.BatchNorm2d(d*4)
         self.conv4 = nn.Conv2d(d*4, d*8, 4, 2, 1)
-        self.conv4_bn = nn.BatchNorm2d(d*8)
-        self.conv5 = nn.Conv2d(d*8, 1, 4, 1, 0)
+        
+        if self.img_size==64:
+            self.conv4 = nn.Conv2d(d*4, d*8, 4, 2, 1)
+            self.conv4_bn = nn.BatchNorm2d(d*8)
+            self.conv5 = nn.Conv2d(d*8, 1, 4, 1, 0)
+        if self.img_size==32:
+            self.conv4 = nn.Conv2d(d*4,1,4,1,0)
 
     # weight_init
     def weight_init(self, mean, std):
@@ -64,9 +78,11 @@ class discriminator(nn.Module):
         x = F.leaky_relu(self.conv1(input), 0.2)
         x = F.leaky_relu(self.conv2_bn(self.conv2(x)), 0.2)
         x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
-        x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
-        x = F.sigmoid(self.conv5(x))
-
+        if self.img_size==64:
+            x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
+            x = F.sigmoid(self.conv5(x))
+        if self.img_size==32:
+            x=F.sigmoid(self.conv4(x))
         return x
 
 def normal_init(m, mean, std):
@@ -98,7 +114,7 @@ lr = 0.0002
 train_epoch = 20
 
 # data_loader
-img_size = 64
+img_size = size
 transform = transforms.Compose([
         transforms.Scale(img_size),
         transforms.ToTensor(),
@@ -109,8 +125,8 @@ train_loader = torch.utils.data.DataLoader(
     batch_size=batch_size, shuffle=True)
 
 # network
-G = generator(128)
-D = discriminator(128)
+G = generator(d=128)
+D = discriminator(d=128)
 G.weight_init(mean=0.0, std=0.02)
 D.weight_init(mean=0.0, std=0.02)
 G.cuda()
@@ -186,17 +202,17 @@ for epoch in range(train_epoch):
         G_optimizer.step()
 
         G_losses.append(G_train_loss.data[0])
-
         num_iter += 1
-
+        if num_iter%1==0:
+            print('epoch: [%d/%d] batch: [%d] loss_d: %.3f loss_g: %.3f' %  (epoch+1,train_epoch,num_iter,D_train_loss.data[0],G_train_loss.data[0]))
     epoch_end_time = time.time()
     per_epoch_ptime = epoch_end_time - epoch_start_time
 
 
     print('[%d/%d] - ptime: %.2f, loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, torch.mean(torch.FloatTensor(D_losses)),
                                                               torch.mean(torch.FloatTensor(G_losses))))
-    p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(epoch + 1) + '.png'
-    fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(epoch + 1) + '.png'
+    p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(epoch + 1) + '_size_'+str(size)+'.png'
+    fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(epoch + 1) + '_size_'+str(size) + '.png'
     save_result(fixed_p,isFix=True)
     save_result(p,isFix=False)
     train_hist['D_losses'].append(torch.mean(torch.FloatTensor(D_losses)))
