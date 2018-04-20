@@ -207,7 +207,8 @@ for epoch in range(train_epoch):
             x_, y_real_, y_fake_ = Variable(x_), Variable(y_real_), Variable(y_fake_)
 
         D_result = D(x_).squeeze()
-        D_real_loss = BCE_loss(D_result, y_real_)
+        #D_real_loss = BCE_loss(D_result, y_real_)
+        D_real_loss= D.margin_loss(D_result,y_real_)
 
         z_ = torch.randn((mini_batch, 100)).view(-1, 100, 1, 1)
 
@@ -220,7 +221,9 @@ for epoch in range(train_epoch):
 
         D_result = D(G_result).squeeze()
 
-        D_fake_loss = BCE_loss(D_result, y_fake_)
+        #D_fake_loss = BCE_loss(D_result, y_fake_)
+        D_fake_loss = D.margin_loss(D_result,y_fake_)
+
 
         D_fake_score = D_result.data.mean()
 
@@ -244,7 +247,9 @@ for epoch in range(train_epoch):
 
         G_result = G(z_)
         D_result = D(G_result).squeeze()
-        G_train_loss = BCE_loss(D_result, y_real_)
+
+        #G_train_loss = BCE_loss(D_result, y_real_)
+        G_train_loss=D.margin_loss(D_result,y_real_)
         G_train_loss.backward()
         G_optimizer.step()
 

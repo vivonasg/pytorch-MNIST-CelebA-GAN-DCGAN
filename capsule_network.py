@@ -143,10 +143,11 @@ class CapsNet(nn.Module):
             reconstructions, masked = self.decoder(output, data)
             return output, reconstructions, masked
 
-        return torch.sqrt((output**2).sum(dim=2, keepdim=True))
+        return output
+        #return torch.sqrt((output**2).sum(dim=2, keepdim=True))
 
             
-    def loss(self, data, x, target, reconstructions,loss_type=1):
+    def loss(self, data, x, target, reconstructions,loss_type=0):
         r_loss=0
         if loss_type==0:
             if self.recontruction_bool:
@@ -168,7 +169,6 @@ class CapsNet(nn.Module):
 
         loss = labels * left + 0.5 * (1.0 - labels) * right
         loss = loss.sum(dim=1).mean()
-        pdb.set_trace()
 
         return loss
     
