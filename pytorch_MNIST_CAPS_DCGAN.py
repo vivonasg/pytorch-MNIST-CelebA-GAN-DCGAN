@@ -14,15 +14,9 @@ import argparse
 
 USE_CUDA=torch.cuda.is_available()
 
-'''
-parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', required=False, type=str, default='mnist', help='cifar10 | imagenet | folder | lfw ')
-parser.add_argument('--caps_D', required=False, action='store_true', default=True, help='use caps as descriminator?')
-parser.add_argument('--save_training', required=False, action='store_true', default=False, help='use caps as descriminator?')
 
-parser.add_argument('--SN', action='store_true',default=True, help='Enables Spectral Normalization ')
-opt = parser.parse_args()
-'''
+
+
 
 # G(z)i
 
@@ -111,7 +105,7 @@ else:
     fixed_z_ = Variable(fixed_z_, volatile=True)
 
 
-def save_result(path = 'result.png', isFix=False):
+def save_result(path = 'result.png', isFix=False,G=None):
     z_ = torch.randn((5*5, 100)).view(-1, 100, 1, 1)
 
     if USE_CUDA:
@@ -278,8 +272,8 @@ def run_model(lr=0.002,
                 p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size)+'_caps_'+hyperparam_tag+'.png'
                 fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size) +'_caps_'+hyperparam_tag+'.png'
 
-                save_result(fixed_p,isFix=True)
-                save_result(p,isFix=False)
+                save_result(fixed_p,isFix=True,G=G)
+                save_result(p,isFix=False,G=G)
 
 
             if verbose:
@@ -289,8 +283,8 @@ def run_model(lr=0.002,
                 p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size)+'_caps_'+hyperparam_tag+'.png'
                 fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size) +'_caps_'+hyperparam_tag+'.png'
 
-                save_result(fixed_p,isFix=True)
-                save_result(p,isFix=False)
+                save_result(fixed_p,isFix=True,G=G)
+                save_result(p,isFix=False,G=G)
 
 
                 torch.save(G.state_dict(), "MNIST_DCGAN_results/generator_param_"+"iter_"+num_iter+"_"+hyperparam_tag+".pkl")
