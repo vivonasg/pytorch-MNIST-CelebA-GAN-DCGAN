@@ -126,7 +126,7 @@ def save_result(path = 'result.png', isFix=False,G=None):
 
 
 # data_loader
-def get_data(batch_size=64,i_size=32)
+def get_data(batch_size=64,i_size=32):
     transform = transforms.Compose([
             transforms.Scale(i_size),
             transforms.ToTensor(),
@@ -275,7 +275,7 @@ def run_model(lr=0.002,
                 p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_'+tag+'.png'
                 fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_'+tag+'.png'
 
-                
+
                 save_result(fixed_p,isFix=True,G=G)
                 save_result(p,isFix=False,G=G)
 
