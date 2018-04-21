@@ -152,7 +152,7 @@ def run_model(lr=0.002,
             USE_CAPS_D=True, 
             SAVE_TRAINING=True, 
             SAVE_IMAGE=True, 
-            num_iter_limit=1000, 
+            num_iter_limit=5, 
             verbose=True, 
             train_loader=train_loader, 
             hyperparam_tag='1'):
@@ -275,8 +275,8 @@ def run_model(lr=0.002,
 
 
             if num_iter%200==0 and USE_CAPS_D and SAVE_IMAGE:
-                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(size)+'_caps_'+hyperparam_tag+'.png'
-                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(size) +'_caps_'+hyperparam_tag+'.png'
+                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size)+'_caps_'+hyperparam_tag+'.png'
+                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size) +'_caps_'+hyperparam_tag+'.png'
 
                 save_result(fixed_p,isFix=True)
                 save_result(p,isFix=False)
@@ -286,8 +286,8 @@ def run_model(lr=0.002,
                 print('epoch: [%d/%d] batch: [%d] loss_d: %.3f loss_g: %.3f' %  (epoch+1,train_epoch,num_iter,D_train_loss.data[0],G_train_loss.data[0]))
             
             if num_iter>=num_iter_limit and SAVE_TRAINING:
-                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(size)+'_caps_'+hyperparam_tag+'.png'
-                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(size) +'_caps_'+hyperparam_tag+'.png'
+                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size)+'_caps_'+hyperparam_tag+'.png'
+                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(num_iter) + '_size_'+str(img_size) +'_caps_'+hyperparam_tag+'.png'
 
                 save_result(fixed_p,isFix=True)
                 save_result(p,isFix=False)

@@ -13,7 +13,12 @@ from pytorch_MNIST_CAPS_DCGAN import *
 
 
 import argparse
-[0.9,0.1,0.5,0.005]
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--n', required=False, type=str, default='1000', help='cifar10 | imagenet | folder | lfw ')
+opt = parser.parse_args()
+opt.n=int(opt.n)
 param_hyper=[[0.7,0.8,0.9],[0.1,0.2,0.3],[0.2,0.5,0.7],[0.005,0.01,0.1]]
 lr_hyper=[0.02,0.002]
 SN_hyper=[True,False]
@@ -33,5 +38,5 @@ for param_0 in param_hyper[0]:
 						run_model(lr=lr,
 				            SN_bool=SN, 
 				            D_param=[param_0,param_1,param_2,param_3],
-				            num_iter_limit=1000,
+				            num_iter_limit=opt.n,
 				            hyperparam_tag=hyper_tag)
