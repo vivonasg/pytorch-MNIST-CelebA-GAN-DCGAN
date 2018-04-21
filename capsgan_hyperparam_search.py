@@ -16,13 +16,16 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--n', required=False, type=str, default='1000', help='cifar10 | imagenet | folder | lfw ')
+parser.add_argument('--n', required=False, type=int, default=1000, help='number of batches')
+parser.add_argument('--b',required=False, type=int, default=128,help='batch size')
 opt = parser.parse_args()
-opt.n=int(opt.n)
-param_hyper=[[0.7,0.8,0.9],[0.1,0.2,0.3],[0.2,0.5,0.7],[0.005,0.01,0.1]]
-lr_hyper=[0.02,0.002]
+
+
+param_hyper=[[0.7,0.9],[0.1,0.3],[0.5],[0.005,0.01]]
+lr_hyper=[0.002,0.02]
 SN_hyper=[True,False]
 
+train_loader=get_data(batch_size=opt.b)
 
 for param_0 in param_hyper[0]:
 	for param_1 in param_hyper[1]:
@@ -39,4 +42,5 @@ for param_0 in param_hyper[0]:
 				            SN_bool=SN, 
 				            D_param=[param_0,param_1,param_2,param_3],
 				            num_iter_limit=opt.n,
-				            hyperparam_tag=hyper_tag)
+				            hyperparam_tag=hyper_tag,
+				            train_loader=train_loader)

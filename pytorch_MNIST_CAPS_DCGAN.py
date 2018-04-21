@@ -126,14 +126,16 @@ def save_result(path = 'result.png', isFix=False,G=None):
 
 
 # data_loader
-transform = transforms.Compose([
-        transforms.Scale(32),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-])
-train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('data', train=True, download=True, transform=transform),
-    batch_size=64, shuffle=True)
+def get_data(batch_size=64,i_size=32)
+    transform = transforms.Compose([
+            transforms.Scale(i_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
+    ])
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('data', train=True, download=True, transform=transform),
+        batch_size=batch_size, shuffle=True)
+    return train_loader
 
 
 def run_model(lr=0.002,
@@ -269,9 +271,11 @@ def run_model(lr=0.002,
 
 
             if num_iter%100==0 and USE_CAPS_D and SAVE_IMAGE:
-                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_'+hyperparam_tag +"_"+ str(num_iter) + '_size_'+str(img_size)+'_caps.png'
-                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_'+hyperparam_tag +"_"+ str(num_iter) + '_size_'+str(img_size) +'_caps.png'
+                tag=hyperparam_tag +"_"+ str(num_iter) + '_size_'+str(img_size)+"_bs_"+str(batch_size)+'_caps
+                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_'+tag+'.png'
+                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_'+tag+'.png'
 
+                
                 save_result(fixed_p,isFix=True,G=G)
                 save_result(p,isFix=False,G=G)
 
@@ -280,15 +284,16 @@ def run_model(lr=0.002,
                 print('epoch: [%d/%d] batch: [%d] loss_d: %.3f loss_g: %.3f' %  (epoch+1,train_epoch,num_iter,D_train_loss.data[0],G_train_loss.data[0]))
             
             if num_iter>=num_iter_limit and SAVE_TRAINING:
-                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_'+hyperparam_tag +"_"+ str(num_iter) + '_size_'+str(img_size)+'_caps.png'
-                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_'+hyperparam_tag +"_"+ str(num_iter) + '_size_'+str(img_size) +'_caps.png'
+                tag=hyperparam_tag +"_"+ str(num_iter) + '_size_'+str(img_size)+"_bs_"+str(batch_size)+'_caps
+                p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_'+tag+'.png'
+                fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_'+tag+'.png'
 
                 save_result(fixed_p,isFix=True,G=G)
                 save_result(p,isFix=False,G=G)
 
-                torch.save(G.state_dict(), "MNIST_DCGAN_results/generator_param_"+hyperparam_tag+"_iter_"+num_iter+".pkl")
-                torch.save(D.state_dict(), "MNIST_DCGAN_results/discriminator_param_param_"+hyperparam_tag+"_iter_"+num_iter+".pkl")
-                with open('MNIST_DCGAN_results/train_hist_iter_'+hyperparam_tag+"_"+num_iter+'.pkl', 'wb') as f:
+                torch.save(G.state_dict(), "MNIST_DCGAN_results/generator_param_"+tag+".pkl")
+                torch.save(D.state_dict(), "MNIST_DCGAN_results/discriminator_param_param_"+tag+".pkl")
+                with open('MNIST_DCGAN_results/train_hist_'+tag+'.pkl', 'wb') as f:
                     pickle.dump(train_hist, f)
 
                 return
